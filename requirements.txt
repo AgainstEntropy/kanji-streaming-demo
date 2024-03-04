@@ -2,6 +2,7 @@ accelerate
 torch
 diffusers
 transformers
+peft
 xformers
 pillow
 
