@@ -153,6 +153,7 @@ def generate(
     formatted_prompt = format_prompt(f"{system_prompt}, {message}", chat_history)
     stream = client.text_generation(formatted_prompt, **generate_kwargs, stream=True, details=True, return_full_text=False)
 
+    global outputs
     outputs = ""
     prompt_queue = SimpleQueue()
 
@@ -165,9 +166,12 @@ def generate(
 
     def append_to_queue():
         for response in stream:
-            outputs += response.token.text
+            text = response.token.text
+            global outputs
+            outputs += text
             text = text.strip()
-            if text:
+            if text and text not in ['</s>']:
+                if text.endswith("."): text = text[:-1]
                 prompt_queue.put(text)
         prompt_queue.put(None)
 
@@ -179,7 +183,6 @@ def generate(
         img_path = None
         if image is not None:
             img_path = stitcher.add(image, text)
-            print(img_path)
         return img_path
 
     while True:
@@ -199,6 +202,7 @@ def generate(
             break
 
     response_cache = outputs
+    print(outputs)
     return outputs
 
 
@@ -266,4 +270,5 @@ with gr.Blocks(css="style.css") as demo:
     gr.Markdown(LICENSE)
 
 if __name__ == "__main__":
-    demo.queue(max_size=20).launch(show_api=False)
+    # demo.queue(max_size=20).launch(show_api=False)
+    demo.queue(max_size=20).launch(server_name="0.0.0.0", share=False)

@@ -1,3 +1,4 @@
+accelarate
 torch
 diffusers
 transformers
